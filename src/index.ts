@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv'
 dotenv.config()
 import { databaseService } from './services/database.service';
-databaseService.connect().catch(console.dir)
+databaseService.connect()
 
 const app = express()
 import { initUserRoute } from './routes/users.route'
