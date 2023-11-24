@@ -4,6 +4,9 @@ import { RegisterReqBody } from "~/models/requests/user.request";
 import { hashPassword } from "~/utils/crypto";
 import { signToken } from "~/utils/jwt";
 import { TokenType } from "~/constants/enums";
+import { ObjectId } from "mongodb";
+import { RefreshToken } from "~/models/schemas/RefreshToken.schema";
+import { userMessage } from "~/constants/message";
 
 class UserService {
 
@@ -21,6 +24,21 @@ class UserService {
         }
         return signToken(payload, process.env.REFRESH_TOKEN_EXPIRES_IN as string)
     }
+    private signAccessTokenAndRefreshToken(userid: string) {
+        return Promise.all([
+            this.signAccessToken(userid),
+            this.signRefreshToken(userid)
+        ])
+    }
+    async login(userid: string) {
+        const [accessToken, refreshToken] = await this.signAccessTokenAndRefreshToken(userid)
+        await databaseService.getRefreshTokenCollection().insertOne(new RefreshToken({ user_id: new ObjectId(userid), token: refreshToken }))
+
+        return {
+            accessToken,
+            refreshToken
+        }
+    }
 
 
     async register(payload: RegisterReqBody) {
@@ -30,17 +48,21 @@ class UserService {
             password: hashPassword(payload.password)
         }))
         const userid = response.insertedId.toString()
-        const [AccessToken, RefreshToken] = await Promise.all([
-            this.signAccessToken(userid),
-            this.signRefreshToken(userid)
-        ])
-
-
+        const [accessToken, refreshToken] = await this.signAccessTokenAndRefreshToken(userid)
+        await databaseService.getRefreshTokenCollection().insertOne(new RefreshToken({ user_id: response.insertedId, token: refreshToken }))
         return {
-            AccessToken,
-            RefreshToken
+            accessToken,
+            refreshToken
         }
     }
+    async logout(refreshToken: string) {
+        // console.log(refreshToken)
+        const response = await databaseService.getRefreshTokenCollection().deleteOne({ token: refreshToken })
+        return response
+    }
+
+
+
     async checkEmailExist(email: string) {
         const response = await databaseService.getUsersCollection().findOne({ email })
         return Boolean(response)
