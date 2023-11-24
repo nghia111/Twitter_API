@@ -1,7 +1,4 @@
-import jwt, { TokenExpiredError } from 'jsonwebtoken'
-import { httpStatus } from '~/constants/httpStatus'
-import { userMessage } from '~/constants/message'
-import { ErrorWithStatus } from '~/models/Errors'
+import jwt from 'jsonwebtoken'
 
 export const signToken = (payload: any, exp: string) => {
     return jwt.sign(payload, process.env.JWT_SECRET as string, { algorithm: 'HS256', expiresIn: exp })
