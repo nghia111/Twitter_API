@@ -1,10 +1,11 @@
 
-import { x64 } from "crypto-js"
+
 import { checkSchema } from "express-validator"
 import { JsonWebTokenError } from "jsonwebtoken"
 import { httpStatus } from "~/constants/httpStatus"
 import { userMessage } from "~/constants/message"
 import { ErrorWithStatus } from "~/models/Errors"
+import { TokenPayload } from "~/models/requests/user.request"
 import { databaseService } from "~/services/database.service"
 
 import { userService } from "~/services/user.service"
@@ -122,14 +123,13 @@ export const registerValidator = validate(checkSchema({
 }, ['body']))
 export const accessTokenValidator = validate(checkSchema({
     Authorization: {
-        notEmpty: { errorMessage: userMessage.ACCESS_TOKEN_IS_REQUIRED },
         custom: {
             options: async (value, { req }) => {
                 try {
+                    if (!value) throw new ErrorWithStatus({ message: userMessage.ACCESS_TOKEN_IS_REQUIRED, status: httpStatus.UNAUTHORIZED })
                     const access_token = value.split(' ')[1]
-                    if (!access_token)
-                        throw new ErrorWithStatus({ message: userMessage.ACCESS_TOKEN_IS_REQUIRED, status: httpStatus.UNAUTHORIZED })
-                    const decode_authorization = verifyToken(access_token, process.env.JWT_SECRET as string)
+                    if (!access_token) throw new ErrorWithStatus({ message: userMessage.ACCESS_TOKEN_IS_REQUIRED, status: httpStatus.UNAUTHORIZED })
+                    const decode_authorization = verifyToken(access_token, process.env.JWT_SECRET_ACCESS_TOKEN as string)
                     // console.log(decode_authorization)
                     req.decode_authorization = decode_authorization
 
@@ -147,14 +147,13 @@ export const accessTokenValidator = validate(checkSchema({
 }, ['headers']))
 export const refreshTokenValidator = validate(checkSchema({
     refreshToken: {
-        notEmpty: { errorMessage: userMessage.REFRESH_TOKEN_IS_REQUIRED },
         custom: {
             options: async (value, { req }) => {
                 try {
+                    if (!value) throw new ErrorWithStatus({ message: userMessage.REFRESH_TOKEN_IS_REQUIRED, status: httpStatus.UNAUTHORIZED })
                     const rft = value.split(' ')[1]
-                    if (!rft)
-                        throw new ErrorWithStatus({ message: userMessage.REFRESH_TOKEN_IS_INVALID, status: httpStatus.UNAUTHORIZED })
-                    const decode_refreshToken = verifyToken(rft, process.env.JWT_SECRET as string)
+                    if (!rft) throw new ErrorWithStatus({ message: userMessage.REFRESH_TOKEN_IS_INVALID, status: httpStatus.UNAUTHORIZED })
+                    const decode_refreshToken = verifyToken(rft, process.env.JWT_SECRET_REFRESH_TOKEN as string)
                     // console.log(decode_refreshToken)
                     req.decode_refreshToken = decode_refreshToken
                     const refreshToken = await databaseService.getRefreshTokenCollection().findOne({ token: rft })
@@ -165,6 +164,30 @@ export const refreshTokenValidator = validate(checkSchema({
                 } catch (error) {
                     if (error instanceof JsonWebTokenError)
                         throw new ErrorWithStatus({ message: userMessage.REFRESH_TOKEN_IS_INVALID, status: httpStatus.UNAUTHORIZED })
+                    throw error
+                }
+
+            }
+        }
+    }
+}, ['body']))
+
+export const emailVerifyTokenValidator = validate(checkSchema({
+    emailVerifyToken: {
+        custom: {
+            options: async (value, { req }) => {
+                try {
+                    if (!value) throw new ErrorWithStatus({ message: userMessage.EMAIL_VERIFY_TOKEN_IS_REQUIRED, status: httpStatus.UNAUTHORIZED })
+                    const evft = value.split(' ')[1]
+                    if (!evft)
+                        throw new ErrorWithStatus({ message: userMessage.EMAIL_VERIFY_TOKEN_IS_INVALID, status: httpStatus.UNAUTHORIZED })
+                    // decode này là userid
+                    const decode_verify_email = verifyToken(evft, process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string)
+                    req.decode_verify_email = decode_verify_email
+                    return true
+                } catch (error) {
+                    if (error instanceof JsonWebTokenError)
+                        throw new ErrorWithStatus({ message: userMessage.EMAIL_VERIFY_TOKEN_IS_INVALID, status: httpStatus.UNAUTHORIZED })
                     throw error
                 }
 
