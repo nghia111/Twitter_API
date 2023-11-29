@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router()
 import { accessTokenValidator, emailVerifyTokenValidator, loginValidator, refreshTokenValidator, registerValidator } from "~/middlewares/users.middleware";
-import { emailVerifyController, loginController, logoutController, registerController } from "~/controllers/users.controller";
+import { emailVerifyController, loginController, logoutController, registerController, resendVerifyEmailController } from "~/controllers/users.controller";
 import { warpFnc } from "~/utils/hanlders";
 
 
@@ -29,6 +29,14 @@ export const initUserRoute = (app: any) => {
       * body: {email_verify_token: string}
       */
   router.post('/verify_email', emailVerifyTokenValidator, warpFnc(emailVerifyController))
+
+  /**
+      * Description: when user click on resend email token
+      * method : POST
+      * header: {access_token} // nghĩa là phải đăng nhập mới được resend
+      */
+  router.post('/resend_verify_email', accessTokenValidator, warpFnc(resendVerifyEmailController))
+
 
 
 

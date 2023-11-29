@@ -57,6 +57,20 @@ export const emailVerifyController = async (req: Request, res: Response) => {
     })
 }
 
+export const resendVerifyEmailController = async (req: Request, res: Response) => {
+    const { user_id } = req.decode_authorization as TokenPayload
+    const user = await databaseService.getUsersCollection().findOne({ _id: new ObjectId(user_id) })
+    if (!user) {
+        return res.status(httpStatus.NOT_FOUND).json({ message: userMessage.USER_NOT_FOUND })
+    }
+    if (user.verify == UserVerifyStatus.Verified) {
+        return res.status(200).json({ message: userMessage.EMAIL_HAS_BEEN_VERIFIRED })
+    }
+    const response = await userService.resendVerifyEmail(user_id)
+    res.status(200).json(response)
+}
+
+
 
 
 

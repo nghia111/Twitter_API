@@ -21,5 +21,5 @@ export const userMessage = {
     EMAIL_VERIFY_TOKEN_IS_INVALID: 'email verify token is invalid',
     TOKEN_IS_EXPRIED: 'token is expired',
     EMAIL_HAS_BEEN_VERIFIRED: 'email has been verified',
-
+    RESEND_VERIFY_EMAIL_SUCCESS: 'resend verify email success',
 } as const

@@ -7,7 +7,7 @@ import { TokenType, UserVerifyStatus } from "~/constants/enums";
 import { ObjectId } from "mongodb";
 import { RefreshToken } from "~/models/schemas/RefreshToken.schema";
 import { userMessage } from "~/constants/message";
-import { promises } from "dns";
+
 
 class UserService {
 
@@ -95,12 +95,26 @@ class UserService {
             refreshToken
         }
     }
+    async resendVerifyEmail(userId: string) {
+        const emailVerifyToken = this.signEmailVerifyToken(userId)
+        // giả bộ gửi email về user
+        console.log('gửi này về email của người dùng: ', emailVerifyToken)
+        // cập nhật giá trị emailVerifyToken lại databaseService
+        await databaseService.getUsersCollection().updateOne({ _id: new ObjectId(userId) }, {
+            $set: {
+                email_verify_token: emailVerifyToken,
+            },
+            $currentDate: { updated_at: true }
 
+        })
+        return { message: userMessage.RESEND_VERIFY_EMAIL_SUCCESS }
+    }
 
 
     async checkEmailExist(email: string) {
         const response = await databaseService.getUsersCollection().findOne({ email })
         return Boolean(response)
     }
+
 }
 export const userService = new UserService()

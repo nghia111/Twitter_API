@@ -195,3 +195,4 @@ export const emailVerifyTokenValidator = validate(checkSchema({
         }
     }
 }, ['body']))
+
