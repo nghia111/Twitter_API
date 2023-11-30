@@ -19,7 +19,12 @@ export const userMessage = {
     REFRESH_TOKEN_IS_INVALID: 'refresh token is invalid',
     EMAIL_VERIFY_TOKEN_IS_REQUIRED: 'email verify token is required',
     EMAIL_VERIFY_TOKEN_IS_INVALID: 'email verify token is invalid',
+    FORGOT_PASSWORD_TOKEN_IS_INVALID: 'forgot password token is invalid',
+    FORGOT_PASSWORD_TOKEN_IS_REQUIRED: 'forgot password token is required',
     TOKEN_IS_EXPRIED: 'token is expired',
     EMAIL_HAS_BEEN_VERIFIRED: 'email has been verified',
+    LOGOUT_SUCCESSFUL: 'logout successful',
     RESEND_VERIFY_EMAIL_SUCCESS: 'resend verify email success',
+    UPDATE_NEW_PASSWORD_SUCCESSFUL: 'update new password successful',
+    CHECK_EMAIL_TO_RESET_PASSWORD: 'check email to reset password',
 } as const

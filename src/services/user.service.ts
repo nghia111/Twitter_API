@@ -38,6 +38,14 @@ class UserService {
         }
         return signToken(payload, process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string, process.env.EMAIL_VERIFY_TOKEN_EXPIRES_IN as string)
     }
+    private signForgotPasswordToken(user_id: string) {
+        const payload = {
+            user_id,
+            token_type: TokenType.ForgotpasswordToken
+        }
+        return signToken(payload, process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string, process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN as string)
+    }
+
     async login(userid: string) {
         const [accessToken, refreshToken] = await this.signAccessTokenAndRefreshToken(userid)
         await databaseService.getRefreshTokenCollection().insertOne(new RefreshToken({ user_id: new ObjectId(userid), token: refreshToken }))
@@ -49,9 +57,12 @@ class UserService {
     }
 
 
+
+
     async register(payload: RegisterReqBody) {
         const userid = new ObjectId()
         const emailVerifyToken = this.signEmailVerifyToken(userid.toString())
+        console.log('Người dùng hãy check email để verify:  đây là token ', emailVerifyToken)
         await databaseService.getUsersCollection().insertOne(new User({
             _id: userid,
             email_verify_token: emailVerifyToken,
@@ -69,7 +80,7 @@ class UserService {
     async logout(refreshToken: string) {
         // console.log(refreshToken)
         const response = await databaseService.getRefreshTokenCollection().deleteOne({ token: refreshToken })
-        return response
+        return { message: userMessage.LOGOUT_SUCCESSFUL }
     }
     async verifyEmail(userid: string) {
         // console.log(refreshToken)
@@ -110,11 +121,43 @@ class UserService {
         return { message: userMessage.RESEND_VERIFY_EMAIL_SUCCESS }
     }
 
+    async forgotPassword(user: User) {
+        const forgotPasswordToken = this.signForgotPasswordToken(user._id.toString())
+        await databaseService.getUsersCollection().updateOne({ _id: user._id }, {
+            $set: {
+                forgot_password_token: forgotPasswordToken
+            },
+            $currentDate: { updated_at: true }
+        })
+        // gửi đến email người dùng 1 cái link có kèm forgotpasswordtoken 
+        console.log('forgot password token: ', forgotPasswordToken)
+        return { message: userMessage.CHECK_EMAIL_TO_RESET_PASSWORD }
+    }
+
+    async resetPassWord(user_id: string, password: string) {
+        password = hashPassword(password)
+        await databaseService.getUsersCollection().updateOne({ _id: new ObjectId(user_id) }, {
+            $set: {
+                password: password,
+                forgot_password_token: '',
+
+
+            },
+            $currentDate: {
+                updated_at: true
+            }
+        }
+        )
+        return { message: userMessage.UPDATE_NEW_PASSWORD_SUCCESSFUL }
+    }
+
 
     async checkEmailExist(email: string) {
         const response = await databaseService.getUsersCollection().findOne({ email })
         return Boolean(response)
     }
+
+
 
 }
 export const userService = new UserService()

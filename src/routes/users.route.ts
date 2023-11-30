@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router()
-import { accessTokenValidator, emailVerifyTokenValidator, loginValidator, refreshTokenValidator, registerValidator } from "~/middlewares/users.middleware";
-import { emailVerifyController, loginController, logoutController, registerController, resendVerifyEmailController } from "~/controllers/users.controller";
+import { accessTokenValidator, emailVerifyTokenValidator, forgotPasswordValidator, loginValidator, refreshTokenValidator, registerValidator, resetPasswordValidator, verifyForgotPasswordTokenValidator } from "~/middlewares/users.middleware";
+import { emailVerifyController, forgotPasswordController, loginController, logoutController, registerController, resendVerifyEmailController, resetPasswordController, } from "~/controllers/users.controller";
 import { warpFnc } from "~/utils/hanlders";
 
 
@@ -36,6 +36,23 @@ export const initUserRoute = (app: any) => {
       * header: {access_token} // nghĩa là phải đăng nhập mới được resend
       */
   router.post('/resend_verify_email', accessTokenValidator, warpFnc(resendVerifyEmailController))
+
+  /**
+      * Description: when user click on progot password button
+      * method : POST
+      * body: {email : string} 
+      */
+  router.post('/forgot_password', forgotPasswordValidator, warpFnc(forgotPasswordController))
+
+
+  /**
+      * Description: when user click link on email after that submit new password form
+      * method : POST
+      * body: {forgotPasswordToken, newPassword, confirmPassword} 
+      */
+  router.post('/reset_password', verifyForgotPasswordTokenValidator, resetPasswordValidator, warpFnc(resetPasswordController))
+
+
 
 
 

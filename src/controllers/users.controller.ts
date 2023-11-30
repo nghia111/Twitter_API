@@ -70,7 +70,17 @@ export const resendVerifyEmailController = async (req: Request, res: Response) =
     res.status(200).json(response)
 }
 
-
+export const forgotPasswordController = async (req: Request, res: Response) => {
+    const user = req.user
+    const response = await userService.forgotPassword(user as User)
+    res.json(response)
+}
+export const resetPasswordController = async (req: Request, res: Response) => {
+    const { user_id } = req.decode_forgot_password_token as TokenPayload
+    const password = req.body.newPassword
+    const response = await userService.resetPassWord(user_id, password)
+    res.json(response)
+}
 
 
 
