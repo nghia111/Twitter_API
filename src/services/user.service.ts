@@ -11,6 +11,11 @@ import { userMessage } from "~/constants/message";
 
 class UserService {
 
+    async checkEmailExist(email: string) {
+        const response = await databaseService.getUsersCollection().findOne({ email })
+        return Boolean(response)
+    }
+
     private signAccessToken(user_id: string) {
         const payload = {
             user_id,
@@ -151,12 +156,17 @@ class UserService {
         return { message: userMessage.UPDATE_NEW_PASSWORD_SUCCESSFUL }
     }
 
-
-    async checkEmailExist(email: string) {
-        const response = await databaseService.getUsersCollection().findOne({ email })
-        return Boolean(response)
+    async getMyProfile(user_id: string) {
+        const response = await databaseService.getUsersCollection().findOne({ _id: new ObjectId(user_id) }, {
+            projection: {
+                password: 0,
+                email_verify_token: 0,
+                forgot_password_token: 0,
+                updated_at: 0,
+            }
+        })
+        return response
     }
-
 
 
 }

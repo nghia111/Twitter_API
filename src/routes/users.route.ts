@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router()
 import { accessTokenValidator, emailVerifyTokenValidator, forgotPasswordValidator, loginValidator, refreshTokenValidator, registerValidator, resetPasswordValidator, verifyForgotPasswordTokenValidator } from "~/middlewares/users.middleware";
-import { emailVerifyController, forgotPasswordController, loginController, logoutController, registerController, resendVerifyEmailController, resetPasswordController, } from "~/controllers/users.controller";
+import { emailVerifyController, forgotPasswordController, getMyProfileController, loginController, logoutController, registerController, resendVerifyEmailController, resetPasswordController, } from "~/controllers/users.controller";
 import { warpFnc } from "~/utils/hanlders";
 
 
@@ -51,6 +51,14 @@ export const initUserRoute = (app: any) => {
       * body: {forgotPasswordToken, newPassword, confirmPassword} 
       */
   router.post('/reset_password', verifyForgotPasswordTokenValidator, resetPasswordValidator, warpFnc(resetPasswordController))
+
+  /**
+      * Description: get my profile
+      * method : GET
+      * headers: {Authorization: Bearer <accessToken>} 
+      */
+  router.get('/me', accessTokenValidator, warpFnc(getMyProfileController))
+
 
 
 

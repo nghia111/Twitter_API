@@ -27,4 +27,7 @@ export const userMessage = {
     RESEND_VERIFY_EMAIL_SUCCESS: 'resend verify email success',
     UPDATE_NEW_PASSWORD_SUCCESSFUL: 'update new password successful',
     CHECK_EMAIL_TO_RESET_PASSWORD: 'check email to reset password',
+    ACCOUT_IS_ALREADY_LOGGED_IN: "account is already logged in",
+    LOGIN_SUCCESSFUL: 'login successful',
+    GET_MY_PROFILE_SUCCESSFUL: 'get my profile successful',
 } as const

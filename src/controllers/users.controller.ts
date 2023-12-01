@@ -12,10 +12,12 @@ import { userService } from "~/services/user.service";
 export const loginController = async (req: Request, res: Response) => {
     const user = req.user as User
     const user_id = user._id
+    const checkLogged = await databaseService.getRefreshTokenCollection().findOne({ user_id: user_id })
+    if (checkLogged) return res.json(userMessage.ACCOUT_IS_ALREADY_LOGGED_IN)
     const response = await userService.login(user_id.toString())
     return res.status(200).json({
         err: 0,
-        message: 'login successful',
+        message: userMessage.LOGIN_SUCCESSFUL,
         response
     })
 }
@@ -33,7 +35,6 @@ export const logoutController = async (req: Request, res: Response) => {
     const response = await userService.logout(refreshToken.split(' ')[1])
 
     res.status(200).json({
-        message: 'logout successful',
         response
     })
 }
@@ -81,6 +82,16 @@ export const resetPasswordController = async (req: Request, res: Response) => {
     const response = await userService.resetPassWord(user_id, password)
     res.json(response)
 }
+export const getMyProfileController = async (req: Request, res: Response) => {
+    const { user_id } = req.decode_authorization as TokenPayload
+    const user = await userService.getMyProfile(user_id)
+    res.json({
+        message: userMessage.GET_MY_PROFILE_SUCCESSFUL,
+        data: user
+    })
+
+}
+
 
 
 
