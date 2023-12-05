@@ -1,9 +1,11 @@
 
 
-import { error } from "console"
+import express from 'express'
+import { NextFunction } from "express"
 import { checkSchema } from "express-validator"
 import { JsonWebTokenError } from "jsonwebtoken"
 import { ObjectId } from "mongodb"
+import { UserVerifyStatus } from '~/constants/enums'
 import { httpStatus } from "~/constants/httpStatus"
 import { userMessage } from "~/constants/message"
 import { ErrorWithStatus } from "~/models/Errors"
@@ -184,6 +186,7 @@ export const emailVerifyTokenValidator = validate(checkSchema({
                     if (!evft)
                         throw new ErrorWithStatus({ message: userMessage.EMAIL_VERIFY_TOKEN_IS_INVALID, status: httpStatus.UNAUTHORIZED })
                     // decode này là userid
+
                     const decode_verify_email = verifyToken(evft, process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string)
                     req.decode_verify_email = decode_verify_email
                     return true
@@ -283,5 +286,126 @@ export const resetPasswordValidator = validate(checkSchema({
             }
         }
     },
+
+}, ['body']))
+
+export const verifyUserValidator = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const { verify } = req.decode_authorization as TokenPayload
+    if (verify != UserVerifyStatus.Verified)
+        return next(new ErrorWithStatus({ message: userMessage.USER_NOT_VERIFY, status: httpStatus.FORBIDDEN }))
+    next()
+}
+export const updateMyProfileValidator = validate(checkSchema({
+    name: {
+        notEmpty: undefined,
+        optional: true, // có thể có hoặc không
+        isString: {
+            errorMessage: userMessage.NAME_MUST_BE_A_STRING
+        },
+        trim: true,
+        isLength: {
+            options: {
+                min: 1,
+                max: 100
+            },
+            errorMessage: userMessage.NAME_LENGTH
+        }
+    },
+    date_of_birth: {
+        optional: true, // có thể có hoặc không
+        isISO8601: {
+            errorMessage: userMessage.DATE_OF_BIRTH_MUST_BE_ISO8601,
+            options: {
+                strict: true,
+                strictSeparator: true
+            }
+        }
+    },
+    bio: {
+        optional: true, // có thể có hoặc không
+        isString: {
+            errorMessage: userMessage.BIO_MUST_BE_A_STRING
+        },
+        trim: true,
+        isLength: {
+            options: {
+                min: 1,
+                max: 200
+            },
+            errorMessage: userMessage.BIO_LENGTH
+        }
+    },
+    location: {
+        optional: true, // có thể có hoặc không
+        isString: {
+            errorMessage: userMessage.LOCATION_MUST_BE_A_STRING
+        },
+        trim: true,
+        isLength: {
+            options: {
+                min: 1,
+                max: 200
+            },
+            errorMessage: userMessage.LOCATION_LENGTH
+        }
+    },
+    website: {
+        optional: true, // có thể có hoặc không
+        isString: {
+            errorMessage: userMessage.WEBSITE_MUST_BE_A_STRING
+        },
+        trim: true,
+        isLength: {
+            options: {
+                min: 1,
+                max: 200
+            },
+            errorMessage: userMessage.WEBSITE_LENGTH
+        }
+    },
+    username: {
+        optional: true, // có thể có hoặc không
+        isString: {
+            errorMessage: userMessage.USERNAME_MUST_BE_A_STRING
+        },
+        trim: true,
+        isLength: {
+            options: {
+                min: 1,
+                max: 100
+            },
+            errorMessage: userMessage.USERNAME_LENGTH
+        }
+    },
+    avatar: {
+        optional: true, // có thể có hoặc không
+        isString: {
+            errorMessage: userMessage.AVATAR_MUST_BE_A_STRING
+        },
+        trim: true,
+        isLength: {
+            options: {
+                min: 1,
+                max: 100
+            },
+            errorMessage: userMessage.AVATAR_LENGTH
+        }
+    },
+    cover_photo: {
+        optional: true, // có thể có hoặc không
+        isString: {
+            errorMessage: userMessage.COVER_PHOTO_MUST_BE_A_STRING
+        },
+        trim: true,
+        isLength: {
+            options: {
+                min: 1,
+                max: 100
+            },
+            errorMessage: userMessage.COVER_PHOTO_LENGTH
+        }
+    },
+
+
 
 }, ['body']))

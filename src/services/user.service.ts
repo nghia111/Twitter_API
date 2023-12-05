@@ -1,6 +1,6 @@
 import { User } from "~/models/schemas/User.schema";
 import { databaseService } from "./database.service";
-import { RegisterReqBody } from "~/models/requests/user.request";
+import { RegisterReqBody, UpdateMyProfile } from "~/models/requests/user.request";
 import { hashPassword } from "~/utils/crypto";
 import { signToken } from "~/utils/jwt";
 import { TokenType, UserVerifyStatus } from "~/constants/enums";
@@ -16,43 +16,47 @@ class UserService {
         return Boolean(response)
     }
 
-    private signAccessToken(user_id: string) {
+    private signAccessToken(user_id: string, verify: UserVerifyStatus) {
         const payload = {
             user_id,
+            verify,
             token_type: TokenType.AccessToken
         }
         return signToken(payload, process.env.JWT_SECRET_ACCESS_TOKEN as string, process.env.ACCESS_TOKEN_EXPIRES_IN as string)
     }
-    private signRefreshToken(user_id: string) {
+    private signRefreshToken(user_id: string, verify: UserVerifyStatus) {
         const payload = {
             user_id,
+            verify,
             token_type: TokenType.RefreshToken
         }
         return signToken(payload, process.env.JWT_SECRET_REFRESH_TOKEN as string, process.env.REFRESH_TOKEN_EXPIRES_IN as string)
     }
-    private signAccessTokenAndRefreshToken(userid: string) {
+    private signAccessTokenAndRefreshToken(user_id: string, verify: UserVerifyStatus) {
         return Promise.all([
-            this.signAccessToken(userid),
-            this.signRefreshToken(userid)
+            this.signAccessToken(user_id, verify),
+            this.signRefreshToken(user_id, verify)
         ])
     }
-    private signEmailVerifyToken(user_id: string) {
+    private signEmailVerifyToken(user_id: string, verify: UserVerifyStatus) {
         const payload = {
             user_id,
+            verify,
             token_type: TokenType.EmailVerifyToken
         }
         return signToken(payload, process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string, process.env.EMAIL_VERIFY_TOKEN_EXPIRES_IN as string)
     }
-    private signForgotPasswordToken(user_id: string) {
+    private signForgotPasswordToken(user_id: string, verify: UserVerifyStatus) {
         const payload = {
             user_id,
+            verify,
             token_type: TokenType.ForgotpasswordToken
         }
         return signToken(payload, process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string, process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN as string)
     }
 
-    async login(userid: string) {
-        const [accessToken, refreshToken] = await this.signAccessTokenAndRefreshToken(userid)
+    async login(userid: string, verify: UserVerifyStatus) {
+        const [accessToken, refreshToken] = await this.signAccessTokenAndRefreshToken(userid, verify)
         await databaseService.getRefreshTokenCollection().insertOne(new RefreshToken({ user_id: new ObjectId(userid), token: refreshToken }))
 
         return {
@@ -66,7 +70,7 @@ class UserService {
 
     async register(payload: RegisterReqBody) {
         const userid = new ObjectId()
-        const emailVerifyToken = this.signEmailVerifyToken(userid.toString())
+        const emailVerifyToken = this.signEmailVerifyToken(userid.toString(), UserVerifyStatus.Unverified)
         console.log('Người dùng hãy check email để verify:  đây là token ', emailVerifyToken)
         await databaseService.getUsersCollection().insertOne(new User({
             _id: userid,
@@ -75,7 +79,7 @@ class UserService {
             date_of_birth: new Date(payload.date_of_birth),
             password: hashPassword(payload.password)
         }))
-        const [accessToken, refreshToken] = await this.signAccessTokenAndRefreshToken(userid.toString())
+        const [accessToken, refreshToken] = await this.signAccessTokenAndRefreshToken(userid.toString(), UserVerifyStatus.Unverified)
         await databaseService.getRefreshTokenCollection().insertOne(new RefreshToken({ user_id: userid, token: refreshToken }))
         return {
             accessToken,
@@ -89,30 +93,26 @@ class UserService {
     }
     async verifyEmail(userid: string) {
         // console.log(refreshToken)
-        const [tokens] = await Promise.all([
-            this.signAccessTokenAndRefreshToken(userid),
-            databaseService.getUsersCollection().updateOne({ _id: new ObjectId(userid) },
-                {
-                    $set: {
-                        verify: UserVerifyStatus.Verified,
-                        email_verify_token: '',
-                        /*( tính theo thời gian tạo giá trị
-                         updated_at: new Date()   )*/
-                    },
-                    //tính theo thời gian cập nhật dữ liệu lên db
-                    $currentDate: {
-                        updated_at: true
-                    }
-                })
-        ])
-        const [accessToken, refreshToken] = tokens
-        return {
-            accessToken,
-            refreshToken
-        }
+        await databaseService.getUsersCollection().updateOne({ _id: new ObjectId(userid) },
+            {
+                $set: {
+                    verify: UserVerifyStatus.Verified,
+                    email_verify_token: '',
+                    /*( tính theo thời gian tạo giá trị
+                     updated_at: new Date()   )*/
+                },
+                //tính theo thời gian cập nhật dữ liệu lên db
+                $currentDate: {
+                    updated_at: true
+                }
+            })
+        await databaseService.getRefreshTokenCollection().deleteOne({ user_id: new ObjectId(userid) })
+        return await this.login(userid, UserVerifyStatus.Verified)
+
+
     }
-    async resendVerifyEmail(userId: string) {
-        const emailVerifyToken = this.signEmailVerifyToken(userId)
+    async resendVerifyEmail(userId: string, verify: UserVerifyStatus) {
+        const emailVerifyToken = this.signEmailVerifyToken(userId, verify)
         // giả bộ gửi email về user
         console.log('gửi này về email của người dùng: ', emailVerifyToken)
         // cập nhật giá trị emailVerifyToken lại databaseService
@@ -127,7 +127,7 @@ class UserService {
     }
 
     async forgotPassword(user: User) {
-        const forgotPasswordToken = this.signForgotPasswordToken(user._id.toString())
+        const forgotPasswordToken = this.signForgotPasswordToken(user._id.toString(), user.verify)
         await databaseService.getUsersCollection().updateOne({ _id: user._id }, {
             $set: {
                 forgot_password_token: forgotPasswordToken
@@ -165,6 +165,26 @@ class UserService {
                 updated_at: 0,
             }
         })
+        return response
+    }
+    async updateMyProfile(user_id: string, dataUpdate: UpdateMyProfile) {
+        const _dataUpdate = dataUpdate.date_of_birth ? { ...dataUpdate, date_of_birth: new Date(dataUpdate.date_of_birth) } : dataUpdate
+        const response = await databaseService.getUsersCollection().findOneAndUpdate({
+            _id: new ObjectId(user_id)
+        }, {
+            $set: {
+                ...(_dataUpdate as UpdateMyProfile & { date_of_birth?: Date })
+            }
+            , $currentDate: { updated_at: true }
+        },
+            {
+                returnDocument: 'after',
+                projection: {
+                    password: 0,
+                    email_verify_token: 0,
+                    forgot_password_token: 0
+                }
+            })
         return response
     }
 

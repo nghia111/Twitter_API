@@ -1,6 +1,7 @@
 import { log } from "console";
 import { Request, Response } from "express"
 import { ParamsDictionary } from 'express-serve-static-core'
+import { pick } from "lodash";
 import { ObjectId } from "mongodb";
 import { UserVerifyStatus } from "~/constants/enums";
 import { httpStatus } from "~/constants/httpStatus";
@@ -13,10 +14,9 @@ export const loginController = async (req: Request, res: Response) => {
     const user = req.user as User
     const user_id = user._id
     const checkLogged = await databaseService.getRefreshTokenCollection().findOne({ user_id: user_id })
-    if (checkLogged) return res.json(userMessage.ACCOUT_IS_ALREADY_LOGGED_IN)
-    const response = await userService.login(user_id.toString())
+    if (checkLogged) return res.json({ message: userMessage.ACCOUT_IS_ALREADY_LOGGED_IN })
+    const response = await userService.login(user_id.toString(), user.verify)
     return res.status(200).json({
-        err: 0,
         message: userMessage.LOGIN_SUCCESSFUL,
         response
     })
@@ -40,16 +40,12 @@ export const logoutController = async (req: Request, res: Response) => {
 }
 export const emailVerifyController = async (req: Request, res: Response) => {
     const { user_id } = req.decode_verify_email as TokenPayload
-
-    const user = await databaseService.getUsersCollection().findOne({ _id: new ObjectId(user_id) })
-    if (!user) {
-        return res.status(httpStatus.NOT_FOUND).json({ message: userMessage.USER_NOT_FOUND })
-    }
-
     // đã verify rồi thì không báo lỗi mà trả về message là đã verify trước đó rồi
+    const user = await databaseService.getUsersCollection().findOne({ _id: new ObjectId(user_id) })
+    if (!user)
+        return res.status(httpStatus.NOT_FOUND).json({ message: userMessage.USER_NOT_FOUND })
     if (user.verify == UserVerifyStatus.Verified)
         return res.status(200).json({ message: userMessage.EMAIL_HAS_BEEN_VERIFIRED })
-
     // nếu chưa verify thì thực hiện verify
     const response = await userService.verifyEmail(user_id)
     res.status(200).json({
@@ -59,7 +55,7 @@ export const emailVerifyController = async (req: Request, res: Response) => {
 }
 
 export const resendVerifyEmailController = async (req: Request, res: Response) => {
-    const { user_id } = req.decode_authorization as TokenPayload
+    const { user_id, verify } = req.decode_authorization as TokenPayload
     const user = await databaseService.getUsersCollection().findOne({ _id: new ObjectId(user_id) })
     if (!user) {
         return res.status(httpStatus.NOT_FOUND).json({ message: userMessage.USER_NOT_FOUND })
@@ -67,7 +63,7 @@ export const resendVerifyEmailController = async (req: Request, res: Response) =
     if (user.verify == UserVerifyStatus.Verified) {
         return res.status(200).json({ message: userMessage.EMAIL_HAS_BEEN_VERIFIRED })
     }
-    const response = await userService.resendVerifyEmail(user_id)
+    const response = await userService.resendVerifyEmail(user_id, verify)
     res.status(200).json(response)
 }
 
@@ -91,7 +87,11 @@ export const getMyProfileController = async (req: Request, res: Response) => {
     })
 
 }
-
+export const updateMyProfileController = async (req: Request, res: Response) => {
+    const { user_id } = req.decode_authorization as TokenPayload
+    const response = await userService.updateMyProfile(user_id, req.body)
+    return res.json(response)
+}
 
 
 
