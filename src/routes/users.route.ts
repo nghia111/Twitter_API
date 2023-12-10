@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router()
-import { accessTokenValidator, updateMyProfileValidator, emailVerifyTokenValidator, forgotPasswordValidator, loginValidator, refreshTokenValidator, registerValidator, resetPasswordValidator, verifyForgotPasswordTokenValidator, verifyUserValidator } from "~/middlewares/users.middleware";
-import { emailVerifyController, forgotPasswordController, getMyProfileController, loginController, logoutController, registerController, resendVerifyEmailController, resetPasswordController, updateMyProfileController, } from "~/controllers/users.controller";
+import { accessTokenValidator, updateMyProfileValidator, emailVerifyTokenValidator, forgotPasswordValidator, loginValidator, refreshTokenValidator, registerValidator, resetPasswordValidator, verifyForgotPasswordTokenValidator, verifyUserValidator, followUserValidator } from "~/middlewares/users.middleware";
+import { emailVerifyController, followUserController, forgotPasswordController, getMyProfileController, loginController, logoutController, registerController, resendVerifyEmailController, resetPasswordController, updateMyProfileController, } from "~/controllers/users.controller";
 import { warpFnc } from "~/utils/hanlders";
 import { filterMiddleware } from "~/middlewares/common.middleware";
 import { UpdateMyProfile } from "~/models/requests/user.request";
@@ -68,6 +68,16 @@ export const initUserRoute = (app: any) => {
         * body: {UpdateMyProfile}
         */
     router.patch('/me', accessTokenValidator, verifyUserValidator, updateMyProfileValidator, filterMiddleware<UpdateMyProfile>(['name', 'date_of_birth', 'bio', 'location', 'website', 'avatar', 'username', 'cover_photo']), warpFnc(updateMyProfileController))
+
+
+
+    /**
+        * Description: update my profile
+        * method : PATCH 
+        * headers: {Authorization: Bearer <accessToken>} 
+        * body: {UpdateMyProfile}
+        */
+    router.post('/follow_user', accessTokenValidator, verifyUserValidator, followUserValidator, warpFnc(followUserController))
 
 
 

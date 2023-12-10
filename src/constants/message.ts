@@ -43,4 +43,7 @@ export const userMessage = {
     USERNAME_LENGTH: 'username length must be from 1 to 100',
     AVATAR_LENGTH: 'avatar length must be from 1 to 200',
     COVER_PHOTO_LENGTH: 'cover_photo length must be from 1 to 200',
+    FOLLOWED_SUCCESS: 'followed success',
+    FOLLOWED_BEFORE: 'followed before',
+    FOLLOWED_USER_ID_INVALID: 'followed user id invalid',
 } as const

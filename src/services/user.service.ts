@@ -7,6 +7,7 @@ import { TokenType, UserVerifyStatus } from "~/constants/enums";
 import { ObjectId } from "mongodb";
 import { RefreshToken } from "~/models/schemas/RefreshToken.schema";
 import { userMessage } from "~/constants/message";
+import { Follower } from "~/models/schemas/Follower.schema";
 
 
 class UserService {
@@ -187,7 +188,22 @@ class UserService {
             })
         return response
     }
+    async follow(user_id: string, followed_user_id: string) {
+        // check xem user này đã follow chưa
+        const checkFollow = await databaseService.getFollowersCollection().findOne({
+            user_id: new ObjectId(user_id),
+            followed_user_id: new ObjectId(followed_user_id)
+        })
+
+        if (checkFollow) return { message: userMessage.FOLLOWED_BEFORE }
+
+        await databaseService.getFollowersCollection().insertOne(new Follower({
+            user_id: new ObjectId(user_id),
+            followed_user_id: new ObjectId(followed_user_id)
+        }))
+        return { message: userMessage.FOLLOWED_SUCCESS }
 
 
+    }
 }
 export const userService = new UserService()

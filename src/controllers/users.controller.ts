@@ -93,5 +93,10 @@ export const updateMyProfileController = async (req: Request, res: Response) => 
     return res.json(response)
 }
 
-
+export const followUserController = async (req: Request, res: Response) => {
+    const { user_id } = req.decode_authorization as TokenPayload
+    const { followed_user_id } = req.body
+    const response = await userService.follow(user_id, followed_user_id)
+    return res.json(response)
+}
 

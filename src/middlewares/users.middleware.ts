@@ -1,5 +1,7 @@
 
 
+import { error } from 'console'
+import { NOTFOUND } from 'dns'
 import express from 'express'
 import { NextFunction } from "express"
 import { checkSchema } from "express-validator"
@@ -409,3 +411,21 @@ export const updateMyProfileValidator = validate(checkSchema({
 
 
 }, ['body']))
+
+export const followUserValidator = validate(checkSchema({
+    followed_user_id: {
+        custom: {
+            options: async (value, { req }) => {
+                // nếu ko truyền lên value hoặc value không đúng định dạng là object Id thì
+                if (!value || !ObjectId.isValid(value)) throw new ErrorWithStatus({ message: userMessage.FOLLOWED_USER_ID_INVALID, status: httpStatus.NOT_FOUND })
+                // nếu có truyền lên thì tìm trong db coi có user đó ko 
+                const followed_user = await databaseService.getUsersCollection().findOne({ _id: new ObjectId(value) })
+                if (!followed_user) throw new ErrorWithStatus({ message: userMessage.USER_NOT_FOUND, status: httpStatus.NOT_FOUND })
+                // nếu có thì coi user này đã verify chưa
+                if (followed_user.verify == UserVerifyStatus.Verified) return true
+                else throw new ErrorWithStatus({ message: userMessage.USER_NOT_VERIFY + ' or banned', status: httpStatus.FORBIDDEN })
+
+            }
+        }
+    }
+}))
