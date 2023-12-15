@@ -2,6 +2,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { TokenType, UserVerifyStatus } from "~/constants/enums";
 
 export interface RegisterReqBody {
+    username: string,
     name: string,
     email: string,
     password: string,

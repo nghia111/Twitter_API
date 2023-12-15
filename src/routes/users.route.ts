@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router()
-import { accessTokenValidator, updateMyProfileValidator, emailVerifyTokenValidator, forgotPasswordValidator, loginValidator, refreshTokenValidator, registerValidator, resetPasswordValidator, verifyForgotPasswordTokenValidator, verifyUserValidator, followUserValidator } from "~/middlewares/users.middleware";
-import { emailVerifyController, followUserController, forgotPasswordController, getMyProfileController, loginController, logoutController, registerController, resendVerifyEmailController, resetPasswordController, updateMyProfileController, } from "~/controllers/users.controller";
+import { accessTokenValidator, updateMyProfileValidator, emailVerifyTokenValidator, forgotPasswordValidator, loginValidator, refreshTokenValidator, registerValidator, resetPasswordValidator, verifyForgotPasswordTokenValidator, verifyUserValidator, followUserValidator, unfollowUserValidator, changePasswordValidator } from "~/middlewares/users.middleware";
+import { changePasswordController, emailVerifyController, followUserController, forgotPasswordController, getMyProfileController, loginController, logoutController, registerController, resendVerifyEmailController, resetPasswordController, unfollowUserController, updateMyProfileController, } from "~/controllers/users.controller";
 import { warpFnc } from "~/utils/hanlders";
 import { filterMiddleware } from "~/middlewares/common.middleware";
 import { UpdateMyProfile } from "~/models/requests/user.request";
@@ -72,12 +72,28 @@ export const initUserRoute = (app: any) => {
 
 
     /**
-        * Description: update my profile
-        * method : PATCH 
+        * Description: follow user 
+        * method : POST 
         * headers: {Authorization: Bearer <accessToken>} 
-        * body: {UpdateMyProfile}
+        * body: {followed_user_id : string}
         */
     router.post('/follow_user', accessTokenValidator, verifyUserValidator, followUserValidator, warpFnc(followUserController))
+
+    /**
+        * Description: unfollow user 
+        * method : POST 
+        * headers: {Authorization: Bearer <accessToken>} 
+        * params: {followed_user_id : string}
+        */
+    router.delete('/follow_user/:followed_user_id', accessTokenValidator, verifyUserValidator, unfollowUserValidator, warpFnc(unfollowUserController))
+
+    /**
+    * Description: change password 
+    * method : PUT 
+    * headers: {Authorization: Bearer <accessToken>} 
+    * params: {old_password : string, password: string, confirm_password: string}
+    */
+    router.put('/change_password', accessTokenValidator, verifyUserValidator, changePasswordValidator, warpFnc(changePasswordController))
 
 
 

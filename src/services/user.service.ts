@@ -205,5 +205,31 @@ class UserService {
 
 
     }
+
+
+    async unfollow(user_id: string, followed_user_id: string) {
+        const response = await databaseService.getFollowersCollection().deleteOne({
+            user_id: new ObjectId(user_id),
+            followed_user_id: new ObjectId(followed_user_id)
+        })
+        // nghĩa là tìm ko ra là chưa follow người này
+        if (!response.deletedCount) return { message: userMessage.ALREADY_UNFOLLOWED }
+        else return { message: userMessage.UNFOLLOW_SUCCESS }
+
+
+    }
+
+    async changePassword(user_id: string, password: string) {
+        await databaseService.getUsersCollection().updateOne({ _id: new ObjectId(user_id) }, {
+            $set: {
+                password: hashPassword(password)
+            }, $currentDate: { updated_at: true }
+        })
+
+
+        return { message: userMessage.CHANGE_PASSWORD_SUCCESS }
+
+
+    }
 }
 export const userService = new UserService()

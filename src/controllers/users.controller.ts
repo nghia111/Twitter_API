@@ -100,3 +100,16 @@ export const followUserController = async (req: Request, res: Response) => {
     return res.json(response)
 }
 
+export const unfollowUserController = async (req: Request, res: Response) => {
+    const { user_id } = req.decode_authorization as TokenPayload
+    const { followed_user_id } = req.params
+    const response = await userService.unfollow(user_id, followed_user_id)
+    return res.json(response)
+}
+
+export const changePasswordController = async (req: Request, res: Response) => {
+    const { user_id } = req.decode_authorization as TokenPayload
+    const { password } = req.body
+    const response = await userService.changePassword(user_id, password)
+    return res.json(response)
+}
