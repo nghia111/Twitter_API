@@ -1,14 +1,27 @@
 import express from "express";
 const router = express.Router()
 import { accessTokenValidator, updateMyProfileValidator, emailVerifyTokenValidator, forgotPasswordValidator, loginValidator, refreshTokenValidator, registerValidator, resetPasswordValidator, verifyForgotPasswordTokenValidator, verifyUserValidator, followUserValidator, unfollowUserValidator, changePasswordValidator } from "~/middlewares/users.middleware";
-import { changePasswordController, emailVerifyController, followUserController, forgotPasswordController, getMyProfileController, loginController, logoutController, registerController, resendVerifyEmailController, resetPasswordController, unfollowUserController, updateMyProfileController, } from "~/controllers/users.controller";
+import { changePasswordController, emailVerifyController, followUserController, forgotPasswordController, getMyProfileController, loginController, logoutController, oauthController, registerController, resendVerifyEmailController, resetPasswordController, unfollowUserController, updateMyProfileController, } from "~/controllers/users.controller";
 import { warpFnc } from "~/utils/hanlders";
 import { filterMiddleware } from "~/middlewares/common.middleware";
 import { UpdateMyProfile } from "~/models/requests/user.request";
 
 
 export const initUserRoute = (app: any) => {
+    /**
+     * Description: Login
+     * method : POST
+     * body: {email: string, password: string}
+     */
     router.post('/login', loginValidator, warpFnc(loginController))
+
+
+    /**
+     * Description: OAuth Google
+     * method : GET
+     * req.url
+     */
+    router.get('/oauth/google', warpFnc(oauthController))
 
     /**
      * Description: Register a new user

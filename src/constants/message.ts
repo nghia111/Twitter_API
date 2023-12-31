@@ -28,7 +28,6 @@ export const userMessage = {
     UPDATE_NEW_PASSWORD_SUCCESSFUL: 'update new password successful',
     CHECK_EMAIL_TO_RESET_PASSWORD: 'check email to reset password',
     ACCOUT_IS_ALREADY_LOGGED_IN: "account is already logged in",
-    LOGIN_SUCCESSFUL: 'login successful',
     GET_MY_PROFILE_SUCCESSFUL: 'get my profile successful',
     USER_NOT_VERIFY: 'user not verify',
     BIO_MUST_BE_A_STRING: 'bio must be a string',
@@ -50,5 +49,9 @@ export const userMessage = {
     UNFOLLOW_SUCCESS: 'unfollow success',
     PASSWORD_IS_INCORRECT: 'password is incorrert',
     CHANGE_PASSWORD_SUCCESS: 'change password success',
-    NEW_PASSWORD_MUST_NOT_BE_SAME: 'The new password must not be the same as the old password'
+    NEW_PASSWORD_MUST_NOT_BE_SAME: 'The new password must not be the same as the old password',
+    GMAIL_NOT_VERIFY: 'gmail not verify',
+    REGISTER_SUCCESS: 'register success',
+    LOGIN_SUCCESS: 'login success',
+
 } as const

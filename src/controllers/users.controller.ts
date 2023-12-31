@@ -10,6 +10,10 @@ import { RegisterReqBody, TokenPayload } from "~/models/requests/user.request";
 import { User } from "~/models/schemas/User.schema";
 import { databaseService } from "~/services/database.service";
 import { userService } from "~/services/user.service";
+
+import dotenv from 'dotenv'
+dotenv.config()
+
 export const loginController = async (req: Request, res: Response) => {
     const user = req.user as User
     const user_id = user._id
@@ -17,7 +21,7 @@ export const loginController = async (req: Request, res: Response) => {
     if (checkLogged) return res.json({ message: userMessage.ACCOUT_IS_ALREADY_LOGGED_IN })
     const response = await userService.login(user_id.toString(), user.verify)
     return res.status(200).json({
-        message: userMessage.LOGIN_SUCCESSFUL,
+        message: userMessage.LOGIN_SUCCESS,
         response
     })
 }
@@ -25,7 +29,7 @@ export const registerController = async (req: Request, res: Response) => {
     const response = await userService.register(req.body)
     return res.status(200).json({
         err: 0,
-        message: "register successful",
+        message: userMessage.REGISTER_SUCCESS,
         response
 
     })
@@ -112,4 +116,12 @@ export const changePasswordController = async (req: Request, res: Response) => {
     const { password } = req.body
     const response = await userService.changePassword(user_id, password)
     return res.json(response)
+}
+
+export const oauthController = async (req: Request, res: Response) => {
+    const { code } = req.query
+    const response = await userService.oauth(code as string)
+    const urlRedirect = `${process.env.CLIENT_REDIRECT_CALLBACK}?access_token=${response.accessToken}&refresh_token=${response.refreshToken}&new_user=${response.newUser}`
+    return res.redirect(urlRedirect)
+
 }
