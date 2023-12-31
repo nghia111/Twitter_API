@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 import { databaseService } from './services/database.service';
 import { initUserRoute } from './routes/users.route'
+import { initMediasRoute } from './routes/medias.route'
 import { defaultErrorHandler } from './middlewares/errors.middleware';
 
 databaseService.connect()
@@ -14,6 +15,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }))
 
 initUserRoute(app)
+initMediasRoute(app)
 app.use(defaultErrorHandler)
 
 app.listen(3000, () => {

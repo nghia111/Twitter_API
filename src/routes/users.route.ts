@@ -7,7 +7,7 @@ import { filterMiddleware } from "~/middlewares/common.middleware";
 import { UpdateMyProfile } from "~/models/requests/user.request";
 
 
-export const initUserRoute = (app: any) => {
+export const initUserRoute = (app: express.Express) => {
     /**
      * Description: Login
      * method : POST
