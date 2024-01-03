@@ -1,8 +1,9 @@
 import express from "express";
 import { uploadSingleImageController } from "~/controllers/medias.controller";
+import { warpFnc } from "~/utils/hanlders";
 const router = express.Router()
 export const initMediasRoute = (app: express.Express) => {
-    router.post('/upload_image', uploadSingleImageController)
+    router.post('/upload_image',warpFnc( uploadSingleImageController))
 
 
 
