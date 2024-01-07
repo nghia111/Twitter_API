@@ -4,6 +4,7 @@ import { Request } from 'express'
 import { File } from 'formidable'
 import sharp from "sharp"
 import fs from 'fs'
+import { isProduction } from "~/constants/config"
 class MediaService {
     async handleUploadSingleImage(req: Request) {
         const form = formidable({
@@ -37,9 +38,13 @@ class MediaService {
         // )
         const newName = image.newFilename.split('.')[0]
         const imageAfterHandling = await sharp(image.filepath).jpeg().toFile(path.resolve(`uploads/${newName}.jpg`))
-        console.log(image.filepath)
+        // console.log(image.filepath)
         fs.unlinkSync(image.filepath)
-        return `http://localhost:3000/uploads/${newName}.jpg`
+
+        return isProduction ? `${process.env.HOST}/uploads/${newName}.jpg` : `http://localhost:${process.env.PORT}/static/image/${newName}.jpg`
+
+
+
 
 
     }

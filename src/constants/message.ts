@@ -53,5 +53,5 @@ export const userMessage = {
     GMAIL_NOT_VERIFY: 'gmail not verify',
     REGISTER_SUCCESS: 'register success',
     LOGIN_SUCCESS: 'login success',
-
+    UPLOAD_SUCCESS: 'Upload success'
 } as const
