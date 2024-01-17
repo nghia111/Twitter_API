@@ -1,16 +1,17 @@
 import { Request, Response } from "express"
 import path from "path"
 import { userMessage } from "~/constants/message"
+import { Media } from "~/models/schemas/Orther"
 import { mediaService } from "~/services/media.service"
 
 import { initFolder } from "~/utils/file"
-export const uploadSingleImageController = async (req: Request, res: Response) => {
+export const uploadImageController = async (req: Request, res: Response) => {
     initFolder('uploads')
     initFolder('uploads/temp')
-    const response = await mediaService.handleUploadSingleImage(req)
+    const response = await mediaService.uploadfiles(req)
     res.json({
         message: userMessage.UPLOAD_SUCCESS,
-        url: response
+        response
     })
 }
 export const serveImageController = (req: Request, res: Response) => {

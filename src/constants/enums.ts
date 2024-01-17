@@ -9,3 +9,8 @@ export const enum UserVerifyStatus {
     Verified, // đã xác thực email
     Banned // bị khóa
 }
+
+export const enum MediaType{
+    Image,
+    Video
+}

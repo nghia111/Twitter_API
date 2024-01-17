@@ -1,17 +1,24 @@
 import express from 'express'
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv'
+import cors from "cors"
 dotenv.config()
 import { databaseService } from './services/database.service';
 import { initUserRoute } from './routes/users.route'
 import { initMediasRoute } from './routes/medias.route'
 import { defaultErrorHandler } from './middlewares/errors.middleware';
-import path from 'path';
+
 import { initStaticRoute } from './routes/static.route';
 
 databaseService.connect()
 
 const app = express()
+
+app.use(cors({
+            // * là cho phép tất cả 
+    origin :"*"
+}))
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }))
