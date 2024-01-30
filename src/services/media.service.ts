@@ -7,10 +7,12 @@ import fs from 'fs'
 import { isProduction } from "~/constants/config"
 import { MediaType } from "~/constants/enums"
 import { Media } from "~/models/schemas/Orther"
+import { UPLOAD_IMAGE_DIR, UPLOAD_IMAGE_TEMP_DIR, UPLOAD_VIDEO_TEMP_DIR } from "~/constants/dir"
 class MediaService {
-    async uploadfiles(req: Request) {
+
+    async uploadImage(req: Request) {
         const form = formidable({
-            uploadDir: path.resolve('uploads/temp'), maxFiles: 4, keepExtensions: true, maxFileSize: 10000 * 1024,
+            uploadDir: UPLOAD_IMAGE_TEMP_DIR, maxFiles: 4, keepExtensions: true, maxFileSize: 10000 * 1024,
             filter: ({ name, originalFilename, mimetype }) => {
                 const valid = name === 'images' && Boolean(mimetype?.includes('image/'))
                 if (!valid)
@@ -27,6 +29,7 @@ class MediaService {
                     return resolve((files.images as File[]))
             });
         })
+
         //     cách viết 2
         //    form.parse(req, (err, fields, files) => {
         //      if(err)
@@ -39,23 +42,47 @@ class MediaService {
         // }
         // )
         // console.log(form)
-        const results : Media[] = await Promise.all(files.map(async (file : File)=>{
+        const results: Media[] = await Promise.all(files.map(async (file: File) => {
             const newName = file.newFilename.split('.')[0]
-            const filesAfterHandling = await sharp(file.filepath).jpeg().toFile(path.resolve(`uploads/${newName}.jpg`))
+            const newPath = path.resolve(UPLOAD_IMAGE_DIR, `${newName}.jpg`)
+            await sharp(file.filepath).jpeg().toFile(newPath)
             // console.log(files.filepath)
             fs.unlinkSync(file.filepath)
             return {
-                url: isProduction ? `${process.env.HOST}/uploads/${newName}.jpg` : `http://localhost:${process.env.PORT}/static/files/${newName}.jpg`,
+                url: isProduction ? `${process.env.HOST}/static/image/${newName}.jpg` : `http://localhost:${process.env.PORT}/static/image/${newName}.jpg`,
                 type: MediaType.Image
-        }
+            }
 
         }))
         return results
+    }
 
 
-       
+    async uploadVideo(req: Request) {
+        const form = formidable({
+            uploadDir: UPLOAD_VIDEO_TEMP_DIR, maxFiles: 1, keepExtensions: true, maxFileSize: 50 * 1024 * 1024,
+            filter: ({ name, originalFilename, mimetype }) => {
+                return true
+            }
+        })
+        // cách viết 1
+        const files: File[] = await new Promise((resolve, reject) => {
+            form.parse(req, (err, fields, files) => {
+                if (err)
+                    return reject(err)
+                else
+                    return resolve((files.video as File[]))
+            });
+        })
+        const { newFilename } = files[0]
+        return {
+            url: isProduction ? `${process.env.HOST}/static/video/${newFilename}` : `http://localhost:${process.env.PORT}/static/video/${newFilename}`,
+            type: MediaType.Video
+        }
 
-     
+
+
+
 
 
 
