@@ -62,7 +62,10 @@ class MediaService {
         const form = formidable({
             uploadDir: UPLOAD_VIDEO_TEMP_DIR, maxFiles: 1, keepExtensions: true, maxFileSize: 50 * 1024 * 1024,
             filter: ({ name, originalFilename, mimetype }) => {
-                return true
+                const valid = name === 'video' && Boolean(mimetype?.includes('mp4') || mimetype?.includes('quicktime'))
+                if (!valid)
+                    form.emit('error' as any, new Error('File type is not valid') as any)
+                return valid
             }
         })
         // cách viết 1

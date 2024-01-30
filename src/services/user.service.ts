@@ -126,6 +126,17 @@ class UserService {
         const response = await databaseService.getRefreshTokenCollection().deleteOne({ token: refreshToken })
         return { message: userMessage.LOGOUT_SUCCESSFUL }
     }
+
+    async refreshToken(user_id: string, verify: UserVerifyStatus, refreshToken: any) {
+        const [access_token, refresh_token] = await this.signAccessTokenAndRefreshToken(user_id, verify)
+        await databaseService.getRefreshTokenCollection().deleteOne({ token: refreshToken.split(' ')[1] })
+        await databaseService.getRefreshTokenCollection().insertOne(new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token }))
+        return {
+            access_token,
+            refresh_token
+        }
+    }
+
     async verifyEmail(userid: string) {
         // console.log(refreshToken)
         await databaseService.getUsersCollection().updateOne({ _id: new ObjectId(userid) },

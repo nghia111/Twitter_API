@@ -42,6 +42,17 @@ export const logoutController = async (req: Request, res: Response) => {
         response
     })
 }
+
+export const refreshTokenController = async (req: Request, res: Response) => {
+    const refreshToken = req.body.refreshToken
+    const { user_id, verify } = req.decode_refreshToken as TokenPayload
+    const response = await userService.refreshToken(user_id, verify, refreshToken)
+    return res.json({
+        mes: userMessage.REFRESH_TOKEN_SUCCESS,
+        response
+    })
+}
+
 export const emailVerifyController = async (req: Request, res: Response) => {
     const { user_id } = req.decode_verify_email as TokenPayload
     // đã verify rồi thì không báo lỗi mà trả về message là đã verify trước đó rồi

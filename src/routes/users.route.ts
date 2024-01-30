@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router()
 import { accessTokenValidator, updateMyProfileValidator, emailVerifyTokenValidator, forgotPasswordValidator, loginValidator, refreshTokenValidator, registerValidator, resetPasswordValidator, verifyForgotPasswordTokenValidator, verifyUserValidator, followUserValidator, unfollowUserValidator, changePasswordValidator } from "~/middlewares/users.middleware";
-import { changePasswordController, emailVerifyController, followUserController, forgotPasswordController, getMyProfileController, loginController, logoutController, oauthController, registerController, resendVerifyEmailController, resetPasswordController, unfollowUserController, updateMyProfileController, } from "~/controllers/users.controller";
+import { changePasswordController, emailVerifyController, followUserController, forgotPasswordController, getMyProfileController, loginController, logoutController, oauthController, refreshTokenController, registerController, resendVerifyEmailController, resetPasswordController, unfollowUserController, updateMyProfileController, } from "~/controllers/users.controller";
 import { warpFnc } from "~/utils/hanlders";
 import { filterMiddleware } from "~/middlewares/common.middleware";
 import { UpdateMyProfile } from "~/models/requests/user.request";
@@ -37,6 +37,14 @@ export const initUserRoute = (app: express.Express) => {
       * body: {refresh_token: string}
       */
     router.post('/logout', accessTokenValidator, refreshTokenValidator, warpFnc(logoutController))
+
+    /**
+      * Description: refresh token
+      * method : POST
+      * body: {refresh_token: string}
+      */
+    router.post('/refresh_token', refreshTokenValidator, warpFnc(refreshTokenController))
+
 
     /**
         * Description: verify when user click on the link in email

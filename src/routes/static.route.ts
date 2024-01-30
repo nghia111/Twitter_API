@@ -3,6 +3,7 @@ import { serveImageController, serveVideoController } from "~/controllers/medias
 const router = express.Router()
 export const initStaticRoute = (app: express.Express) => {
     router.get('/image/:name', serveImageController)
+    //chưa custom streaming video
     router.get('/video/:name', serveVideoController)
 
 
