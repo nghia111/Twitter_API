@@ -1,8 +1,10 @@
 import { checkSchema } from "express-validator";
-import { isEmpty } from "lodash";
+import { isEmpty, isString } from "lodash";
 import { ObjectId } from "mongodb";
 import { MediaType, TweetAudience, TweetType } from "~/constants/enums";
 import { tweetMessage } from "~/constants/message";
+import { ErrorWithStatus } from "~/models/Errors";
+import { databaseService } from "~/services/database.service";
 import { numberEnumToArray } from "~/utils/other";
 import { validate } from "~/utils/validation";
 
@@ -99,3 +101,21 @@ export const tweetValidator = validate(
 
         })
 )
+
+export const tweetIdValidator = validate(checkSchema({
+    tweet_id: {
+        isString: true,
+        custom: {
+            options: async (value) => {
+                if (!ObjectId.isValid(value)) {
+                    throw new Error("tweet_id is invalid a ObjectId type")
+                }
+                const tweet = await databaseService.getTweetsCollection().findOne({ _id: new ObjectId(value) })
+                if (!tweet) {
+                    throw new Error("Tweet Not Found")
+                }
+                return true
+            }
+        }
+    }
+}))

@@ -1,6 +1,6 @@
 import express from 'express'
-import { bookmarkTweetController, createTweetController } from '~/controllers/tweets.controller'
-import { tweetValidator } from '~/middlewares/tweets.middleware'
+import { bookmarkTweetController, createTweetController, likeTweetController, unbookmarkTweetController, unlikeTweetController } from '~/controllers/tweets.controller'
+import { tweetIdValidator, tweetValidator } from '~/middlewares/tweets.middleware'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middleware'
 import { warpFnc } from '~/utils/hanlders'
 const router = express.Router()
@@ -15,15 +15,26 @@ export const initTweetRoute = (app: express.Express) => {
     /**
     * Description: Create BookMark
     * method : POST
-    * body: {TweetReqBody}
+    * body: {tweet_id}
     */
-    router.post('/bookmark', accessTokenValidator, verifyUserValidator, warpFnc(bookmarkTweetController))
+    router.post('/bookmark', accessTokenValidator, verifyUserValidator, tweetIdValidator, warpFnc(bookmarkTweetController))
     /**
-    * Description: Create Like Tweet
-    * method : POST
-    * body: {TweetReqBody}
+    * Description: Unbookmark
+    * method : DELETE
+    * params: {tweet_id}
     */
-    router.post('/like', accessTokenValidator, verifyUserValidator, tweetValidator, warpFnc(createTweetController))
+    router.delete('/unbookmark/:tweet_id', accessTokenValidator, verifyUserValidator, tweetIdValidator, warpFnc(unbookmarkTweetController))
+
+    router.post('/like', accessTokenValidator, verifyUserValidator, tweetIdValidator, warpFnc(likeTweetController))
+
+    router.delete('/unlike/:tweet_id', accessTokenValidator, verifyUserValidator, tweetIdValidator, warpFnc(unlikeTweetController))
+
+
+
+
+
+
+
 
     app.use('/tweets', router)
 }

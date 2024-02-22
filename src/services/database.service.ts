@@ -6,6 +6,7 @@ import Tweet from '~/models/schemas/Tweet.schema';
 import { User } from '~/models/schemas/User.schema';
 import { Hashtag } from '~/models/schemas/Hashtag.schema';
 import { Bookmark } from '~/models/schemas/Bookmark.schema';
+import { Like } from '~/models/schemas/Like.schema';
 
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@twitter.79ga7nh.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -53,7 +54,9 @@ class DatabaseService {
     getBookmarksCollection(): Collection<Bookmark> {
         return this.db.collection(process.env.DB_BOOKMARKS_COLLECTION as string)
     }
-
+    getLikesCollection(): Collection<Like> {
+        return this.db.collection(process.env.DB_LIKES_COLLECTION as string)
+    }
 
     //
 

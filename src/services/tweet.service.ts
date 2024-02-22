@@ -4,6 +4,7 @@ import Tweet from "~/models/schemas/Tweet.schema";
 import { ObjectId, WithId } from "mongodb";
 import { Hashtag } from "~/models/schemas/Hashtag.schema";
 import { Bookmark } from "~/models/schemas/Bookmark.schema";
+import { Like } from "~/models/schemas/Like.schema";
 
 class TweetService {
 
@@ -27,6 +28,7 @@ class TweetService {
             .filter(id => id !== undefined) as ObjectId[];
     }
 
+    /////////////////////////////////////
     async createTweet(body: TweetReqBody, user_id: string) {
         const hashtags = await this.createHashtag(body.hashtags)
 
@@ -43,6 +45,8 @@ class TweetService {
         const tweet = await databaseService.getTweetsCollection().findOne({ _id: response.insertedId })
         return tweet
     }
+
+    /////////////////////////////////////
     async bookmarkTweet(tweet_id: string, user_id: string) {
         const response = await databaseService.getBookmarksCollection().findOneAndUpdate(
             {
@@ -56,8 +60,45 @@ class TweetService {
             }
 
         )
-        console.log(response)
         return response as WithId<Bookmark>
+    }
+
+    async unbookmarkTweet(tweet_id: string, user_id: string) {
+        const response = await databaseService.getBookmarksCollection().findOneAndDelete(
+            {
+                user_id: new ObjectId(user_id),
+                tweet_id: new ObjectId(tweet_id)
+            }
+
+        )
+        return response as WithId<Bookmark>
+    }
+
+    async likeTweet(tweet_id: string, user_id: string) {
+        const response = await databaseService.getLikesCollection().findOneAndUpdate(
+            {
+                user_id: new ObjectId(user_id),
+                tweet_id: new ObjectId(tweet_id)
+            },
+            { $setOnInsert: new Like({ user_id: new ObjectId(user_id), tweet_id: new ObjectId(tweet_id) }) },
+            {
+                upsert: true,
+                returnDocument: 'after'
+            }
+
+        )
+        return response as WithId<Like>
+    }
+
+    async unlikeTweet(tweet_id: string, user_id: string) {
+        const response = await databaseService.getLikesCollection().findOneAndDelete(
+            {
+                user_id: new ObjectId(user_id),
+                tweet_id: new ObjectId(tweet_id)
+            }
+
+        )
+        return response as WithId<Like>
     }
 
 }
