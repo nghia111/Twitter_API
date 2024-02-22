@@ -25,7 +25,7 @@ export const loginController = async (req: Request, res: Response) => {
         response
     })
 }
-export const registerController = async (req: Request, res: Response) => {
+export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
     const response = await userService.register(req.body)
     return res.status(200).json({
         err: 0,
@@ -45,8 +45,8 @@ export const logoutController = async (req: Request, res: Response) => {
 
 export const refreshTokenController = async (req: Request, res: Response) => {
     const refreshToken = req.body.refreshToken
-    const { user_id, verify } = req.decode_refreshToken as TokenPayload
-    const response = await userService.refreshToken(user_id, verify, refreshToken)
+    const { user_id, verify, exp } = req.decode_refreshToken as TokenPayload
+    const response = await userService.refreshToken(user_id, verify, refreshToken, exp)
     return res.json({
         mes: userMessage.REFRESH_TOKEN_SUCCESS,
         response

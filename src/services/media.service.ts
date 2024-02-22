@@ -6,7 +6,7 @@ import sharp from "sharp"
 import fs from 'fs'
 import { isProduction } from "~/constants/config"
 import { MediaType } from "~/constants/enums"
-import { Media } from "~/models/schemas/Orther"
+import { Media } from "~/models/schemas/Other"
 import { UPLOAD_IMAGE_DIR, UPLOAD_IMAGE_TEMP_DIR, UPLOAD_VIDEO_TEMP_DIR } from "~/constants/dir"
 class MediaService {
 

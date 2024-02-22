@@ -28,13 +28,26 @@ class UserService {
         }
         return signToken(payload, process.env.JWT_SECRET_ACCESS_TOKEN as string, process.env.ACCESS_TOKEN_EXPIRES_IN as string)
     }
-    private signRefreshToken(user_id: string, verify: UserVerifyStatus) {
-        const payload = {
-            user_id,
-            verify,
-            token_type: TokenType.RefreshToken
+    private signRefreshToken(user_id: string, verify: UserVerifyStatus, expired_in?: number) {
+
+        if (expired_in) {
+            const payload = {
+                user_id,
+                verify,
+                token_type: TokenType.RefreshToken,
+                exp: expired_in
+
+            }
+            return signToken(payload, process.env.JWT_SECRET_REFRESH_TOKEN as string)
+        } else {
+            const payload = {
+                user_id,
+                verify,
+                token_type: TokenType.RefreshToken,
+
+            }
+            return signToken(payload, process.env.JWT_SECRET_REFRESH_TOKEN as string, process.env.REFRESH_TOKEN_EXPIRES_IN as string)
         }
-        return signToken(payload, process.env.JWT_SECRET_REFRESH_TOKEN as string, process.env.REFRESH_TOKEN_EXPIRES_IN as string)
     }
     private signAccessTokenAndRefreshToken(user_id: string, verify: UserVerifyStatus) {
         return Promise.all([
@@ -127,8 +140,9 @@ class UserService {
         return { message: userMessage.LOGOUT_SUCCESSFUL }
     }
 
-    async refreshToken(user_id: string, verify: UserVerifyStatus, refreshToken: any) {
-        const [access_token, refresh_token] = await this.signAccessTokenAndRefreshToken(user_id, verify)
+    async refreshToken(user_id: string, verify: UserVerifyStatus, refreshToken: string, exp: number) {
+        const access_token = await this.signAccessToken(user_id, verify)
+        const refresh_token = await this.signRefreshToken(user_id, verify, exp)
         await databaseService.getRefreshTokenCollection().deleteOne({ token: refreshToken.split(' ')[1] })
         await databaseService.getRefreshTokenCollection().insertOne(new RefreshToken({ user_id: new ObjectId(user_id), token: refresh_token }))
         return {

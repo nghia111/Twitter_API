@@ -9,14 +9,15 @@ import { initMediasRoute } from './routes/medias.route'
 import { defaultErrorHandler } from './middlewares/errors.middleware';
 
 import { initStaticRoute } from './routes/static.route';
+import { initTweetRoute } from './routes/tweets.route';
 
 databaseService.connect()
 
 const app = express()
 
 app.use(cors({
-            // * là cho phép tất cả 
-    origin :"*"
+    // * là cho phép tất cả 
+    origin: "*"
 }))
 
 
@@ -26,6 +27,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 initUserRoute(app)
 initMediasRoute(app)
 initStaticRoute(app)
+initTweetRoute(app)
 // //                                    thư mục tĩnh
 // app.use('/uploads', express.static(path.resolve('uploads')))
 app.use(defaultErrorHandler)

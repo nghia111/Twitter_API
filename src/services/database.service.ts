@@ -2,7 +2,9 @@
 import { Collection, Db, MongoClient } from 'mongodb'
 import { Follower } from '~/models/schemas/Follower.schema';
 import { RefreshToken } from '~/models/schemas/RefreshToken.schema';
+import Tweet from '~/models/schemas/Tweet.schema';
 import { User } from '~/models/schemas/User.schema';
+import { Hashtag } from '~/models/schemas/Hashtag.schema';
 
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@twitter.79ga7nh.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -40,6 +42,12 @@ class DatabaseService {
     }
     getFollowersCollection(): Collection<Follower> {
         return this.db.collection(process.env.DB_FOLLOWERS_COLLECTION as string)
+    }
+    getTweetsCollection(): Collection<Tweet> {
+        return this.db.collection(process.env.DB_TWEETS_COLLECTION as string)
+    }
+    getHashtagsCollection(): Collection<Hashtag> {
+        return this.db.collection(process.env.DB_HASHTAGS_COLLECTION as string)
     }
 
 
