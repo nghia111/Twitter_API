@@ -3,6 +3,7 @@ import { databaseService } from "./database.service";
 import Tweet from "~/models/schemas/Tweet.schema";
 import { ObjectId, WithId } from "mongodb";
 import { Hashtag } from "~/models/schemas/Hashtag.schema";
+import { Bookmark } from "~/models/schemas/Bookmark.schema";
 
 class TweetService {
 
@@ -42,7 +43,23 @@ class TweetService {
         const tweet = await databaseService.getTweetsCollection().findOne({ _id: response.insertedId })
         return tweet
     }
-}
+    async bookmarkTweet(tweet_id: string, user_id: string) {
+        const response = await databaseService.getBookmarksCollection().findOneAndUpdate(
+            {
+                user_id: new ObjectId(user_id),
+                tweet_id: new ObjectId(tweet_id)
+            },
+            { $setOnInsert: new Bookmark({ user_id: new ObjectId(user_id), tweet_id: new ObjectId(tweet_id) }) },
+            {
+                upsert: true,
+                returnDocument: 'after'
+            }
 
+        )
+        console.log(response)
+        return response as WithId<Bookmark>
+    }
+
+}
 
 export const tweetService = new TweetService()
