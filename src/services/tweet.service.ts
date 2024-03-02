@@ -5,6 +5,7 @@ import { ObjectId, WithId } from "mongodb";
 import { Hashtag } from "~/models/schemas/Hashtag.schema";
 import { Bookmark } from "~/models/schemas/Bookmark.schema";
 import { Like } from "~/models/schemas/Like.schema";
+import { TweetType } from "~/constants/enums";
 
 class TweetService {
 
@@ -118,6 +119,146 @@ class TweetService {
             })
             return response
         }
+    }
+
+    async getTweetChildren(tweet_id: string, type: TweetType, page: number, limit: number) {
+        const tweets = await databaseService.getTweetsCollection().aggregate([
+            {
+                '$match': {
+                    'parent_id': new ObjectId(tweet_id),
+                    'type': type
+                }
+            }, {
+                '$lookup': {
+                    'from': 'hashtags',
+                    'localField': 'hashtags',
+                    'foreignField': '_id',
+                    'as': 'hashtags'
+                }
+            }, {
+                '$addFields': {
+                    'hashtags': {
+                        '$map': {
+                            'input': '$hashtags',
+                            'as': 'item',
+                            'in': {
+                                '_id': '$$item._id',
+                                '_name': '$$item.name'
+                            }
+                        }
+                    }
+                }
+            }, {
+                '$lookup': {
+                    'from': 'users',
+                    'localField': 'mentions',
+                    'foreignField': '_id',
+                    'as': 'mentions'
+                }
+            }, {
+                '$addFields': {
+                    'mentions': {
+                        '$map': {
+                            'input': '$mentions',
+                            'as': 'item',
+                            'in': {
+                                '_id': '$$item._id',
+                                'name': '$$item.name',
+                                'username': '$$item.username',
+                                'email': '$$item.email'
+                            }
+                        }
+                    }
+                }
+            }, {
+                '$lookup': {
+                    'from': 'likes',
+                    'localField': '_id',
+                    'foreignField': 'tweet_id',
+                    'as': 'likes'
+                }
+            }, {
+                '$lookup': {
+                    'from': 'bookmarks',
+                    'localField': '_id',
+                    'foreignField': 'tweet_id',
+                    'as': 'bookmarks'
+                }
+            }, {
+                '$lookup': {
+                    'from': 'tweets',
+                    'localField': '_id',
+                    'foreignField': 'parent_id',
+                    'as': 'tweet_children'
+                }
+            }, {
+                '$addFields': {
+                    'bookmarks': {
+                        '$size': '$bookmarks'
+                    },
+                    'likes': {
+                        '$size': '$likes'
+                    },
+                    'retweet_count': {
+                        '$size': {
+                            '$filter': {
+                                'input': '$tweet_children',
+                                'as': 'item',
+                                'cond': {
+                                    '$eq': [
+                                        '$$item.type', TweetType.Retweet
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    'commentt_count': {
+                        '$size': {
+                            '$filter': {
+                                'input': '$tweet_children',
+                                'as': 'item',
+                                'cond': {
+                                    '$eq': [
+                                        '$$item.type', TweetType.Comment
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    'quotetweet_count': {
+                        '$size': {
+                            '$filter': {
+                                'input': '$tweet_children',
+                                'as': 'item',
+                                'cond': {
+                                    '$eq': [
+                                        '$$item.type', TweetType.QuoteTweet
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    'views': {
+                        '$add': [
+                            '$user_views', '$guest_Views'
+                        ]
+                    }
+                }
+            }, {
+                '$project': {
+                    'tweet_children': 0
+                }
+            }, {
+                '$skip': limit * (page - 1)   // công thức phân trang
+            }, {
+                '$limit': limit
+            }
+        ]).toArray()
+        const total = await databaseService.getTweetsCollection().countDocuments({
+            parent_id: new ObjectId(tweet_id),
+            type
+        })
+        return { tweets, total }
     }
 }
 

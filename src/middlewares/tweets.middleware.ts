@@ -117,7 +117,7 @@ export const tweetIdValidator = validate(checkSchema({
                 const tweet = (await databaseService.getTweetsCollection().aggregate([
                     {
                         '$match': {
-                            '_id': new ObjectId('65debf4a38cc07a545e3a7ce')
+                            '_id': new ObjectId(value)
                         }
                     }, {
                         '$lookup': {
@@ -197,7 +197,7 @@ export const tweetIdValidator = validate(checkSchema({
                                         'as': 'item',
                                         'cond': {
                                             '$eq': [
-                                                '$$item.type', 1
+                                                '$$item.type', TweetType.Retweet
                                             ]
                                         }
                                     }
@@ -210,7 +210,7 @@ export const tweetIdValidator = validate(checkSchema({
                                         'as': 'item',
                                         'cond': {
                                             '$eq': [
-                                                '$$item.type', 2
+                                                '$$item.type', TweetType.Comment
                                             ]
                                         }
                                     }
@@ -223,7 +223,7 @@ export const tweetIdValidator = validate(checkSchema({
                                         'as': 'item',
                                         'cond': {
                                             '$eq': [
-                                                '$$item.type', 3
+                                                '$$item.type', TweetType.QuoteTweet
                                             ]
                                         }
                                     }

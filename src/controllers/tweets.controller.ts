@@ -1,6 +1,7 @@
 import { Request, Response, response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
+import { TweetType } from '~/constants/enums'
 import { tweetMessage } from '~/constants/message'
 import { BookmarkReqBody } from '~/models/requests/bookmark.request'
 import { LikeReqBody } from '~/models/requests/like.request'
@@ -62,7 +63,27 @@ export const getTweetController = async (req: Request, res: Response) => {
     const tweet_id = (req.tweet as Tweet)._id
     const response = await tweetService.increaseView(tweet_id as ObjectId, user_id)
     return res.json({
-        message: "ok",
+        message: "Get Tweet Successfully",
         response: response
+    })
+}
+export const getTweetChildrenController = async (req: Request, res: Response) => {
+    const tweet_id = req.params.tweet_id
+
+    // lấy từ query ra thì là string hết phải chuyển về dạng number
+    const type = Number(req.query.tweet_type) as TweetType
+    const page = Number(req.query.page)
+    const limit = Number(req.query.limit)
+    const { total, tweets } = await tweetService.getTweetChildren(tweet_id, type, page, limit)
+    const total_page = Math.ceil(total / limit)
+    return res.json({
+        message: "Get Tweet Children Successfully",
+        response: {
+            tweets,
+            type,
+            page,
+            limit,
+            total_page
+        }
     })
 }
