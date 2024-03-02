@@ -69,4 +69,5 @@ export const tweetMessage = {
     MENTIONS_MUST_BE_AN_ARRAY_OF_USER_ID: 'mentions must be an array of user id',
     MEDIAS_MUST_BE_AN_ARRAY_OF_MEDIA_OBJECT: 'medias must be an array of media object',
     CREATE_TWEET_SUCCESSFULLY: "Create Tweet Succeessfuly",
+    TWEET_IS_NOT_PUBLIC: "tweet is not public",
 } as const

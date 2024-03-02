@@ -1,10 +1,12 @@
-import { Request, Response } from 'express'
+import { Request, Response, response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
+import { ObjectId } from 'mongodb'
 import { tweetMessage } from '~/constants/message'
 import { BookmarkReqBody } from '~/models/requests/bookmark.request'
 import { LikeReqBody } from '~/models/requests/like.request'
 import { TweetReqBody } from '~/models/requests/tweet.request'
 import { TokenPayload } from '~/models/requests/user.request'
+import Tweet from '~/models/schemas/Tweet.schema'
 import { tweetService } from '~/services/tweet.service'
 
 export const createTweetController = async (req: Request<ParamsDictionary, any, TweetReqBody>, res: Response) => {
@@ -52,5 +54,15 @@ export const unlikeTweetController = async (req: Request, res: Response) => {
     return res.json({
         message: response ? "unlike successfully" : "You haven't liked this tweet yet",
         response
+    })
+}
+
+export const getTweetController = async (req: Request, res: Response) => {
+    const user_id = req.decode_authorization?.user_id
+    const tweet_id = (req.tweet as Tweet)._id
+    const response = await tweetService.increaseView(tweet_id as ObjectId, user_id)
+    return res.json({
+        message: "ok",
+        response: response
     })
 }

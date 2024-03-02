@@ -14,7 +14,7 @@ interface UserType {
     email_verify_token?: string // jwt hoặc '' nếu đã xác thực email
     forgot_password_token?: string // jwt hoặc '' nếu đã xác thực email
     verify?: UserVerifyStatus
-
+    twitter_circle?: ObjectId[]
     bio?: string // optional
     location?: string // optional
     website?: string // optional
@@ -33,7 +33,7 @@ export class User {
     email_verify_token: string // jwt hoặc '' nếu đã xác thực email
     forgot_password_token: string // jwt hoặc '' nếu đã xác thực email
     verify: UserVerifyStatus
-
+    twitter_circle: ObjectId[]
     bio: string // optional
     location: string // optional
     website: string // optional
@@ -51,6 +51,7 @@ export class User {
         this.email_verify_token = user.email_verify_token || ''
         this.forgot_password_token = user.forgot_password_token || ''
         this.verify = user.verify || 0
+        this.twitter_circle = user.twitter_circle || []
         this.bio = user.bio || ''
         this.location = user.location || ''
         this.website = user.website || ''

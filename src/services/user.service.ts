@@ -120,13 +120,14 @@ class UserService {
         const userid = new ObjectId()
         const emailVerifyToken = this.signEmailVerifyToken(userid.toString(), UserVerifyStatus.Unverified)
         console.log('Người dùng hãy check email để verify:  đây là token ', emailVerifyToken)
-        await databaseService.getUsersCollection().insertOne(new User({
+        const user = new User({
             _id: userid,
             email_verify_token: emailVerifyToken,
             ...payload,
             date_of_birth: new Date(payload.date_of_birth),
             password: hashPassword(payload.password)
-        }))
+        })
+        await databaseService.getUsersCollection().insertOne(user)
         const [accessToken, refreshToken] = await this.signAccessTokenAndRefreshToken(userid.toString(), UserVerifyStatus.Unverified)
         await databaseService.getRefreshTokenCollection().insertOne(new RefreshToken({ user_id: userid, token: refreshToken }))
         return {

@@ -101,6 +101,24 @@ class TweetService {
         return response as WithId<Like>
     }
 
+    async increaseView(tweet_id: ObjectId, user_id: string | undefined) {
+        if (!user_id) {
+            const response = await databaseService.getTweetsCollection().findOneAndUpdate({ _id: tweet_id }, {
+                $inc: { guest_Views: 1 }
+            }, {
+                returnDocument: 'after',
+            })
+            return response
+
+        } else {
+            const response = await databaseService.getTweetsCollection().findOneAndUpdate({ _id: tweet_id }, {
+                $inc: { user_views: 1 }
+            }, {
+                returnDocument: 'after',
+            })
+            return response
+        }
+    }
 }
 
 export const tweetService = new TweetService()
