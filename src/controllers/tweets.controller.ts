@@ -5,9 +5,10 @@ import { TweetType } from '~/constants/enums'
 import { tweetMessage } from '~/constants/message'
 import { BookmarkReqBody } from '~/models/requests/bookmark.request'
 import { LikeReqBody } from '~/models/requests/like.request'
-import { TweetReqBody } from '~/models/requests/tweet.request'
+import { TweetParams, TweetQuery, TweetReqBody } from '~/models/requests/tweet.request'
 import { TokenPayload } from '~/models/requests/user.request'
 import Tweet from '~/models/schemas/Tweet.schema'
+import { databaseService } from '~/services/database.service'
 import { tweetService } from '~/services/tweet.service'
 
 export const createTweetController = async (req: Request<ParamsDictionary, any, TweetReqBody>, res: Response) => {
@@ -67,14 +68,15 @@ export const getTweetController = async (req: Request, res: Response) => {
         response: response
     })
 }
-export const getTweetChildrenController = async (req: Request, res: Response) => {
+export const getTweetChildrenController = async (req: Request<TweetParams, any, any, TweetQuery>, res: Response) => {
     const tweet_id = req.params.tweet_id
-
+    const user_id = req.decode_authorization?.user_id
     // lấy từ query ra thì là string hết phải chuyển về dạng number
     const type = Number(req.query.tweet_type) as TweetType
     const page = Number(req.query.page)
     const limit = Number(req.query.limit)
-    const { total, tweets } = await tweetService.getTweetChildren(tweet_id, type, page, limit)
+    const { total, tweets } = await tweetService.getTweetChildren(tweet_id, type, page, limit, user_id)
+
     const total_page = Math.ceil(total / limit)
     return res.json({
         message: "Get Tweet Children Successfully",

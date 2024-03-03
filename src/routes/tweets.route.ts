@@ -1,6 +1,6 @@
 import express from 'express'
 import { bookmarkTweetController, createTweetController, getTweetChildrenController, getTweetController, likeTweetController, unbookmarkTweetController, unlikeTweetController } from '~/controllers/tweets.controller'
-import { audienceValidator, isUserLoggedInValidator, tweetIdValidator, tweetValidator } from '~/middlewares/tweets.middleware'
+import { audienceValidator, getTweetChildrenValidator, isUserLoggedInValidator, tweetIdValidator, tweetValidator } from '~/middlewares/tweets.middleware'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middleware'
 import { warpFnc } from '~/utils/hanlders'
 const router = express.Router()
@@ -53,7 +53,7 @@ export const initTweetRoute = (app: express.Express) => {
    * 
    * query: {limit: number, page: number, tweet_type: number}
    */
-    router.get('/:tweet_id/children', tweetIdValidator, isUserLoggedInValidator(accessTokenValidator), isUserLoggedInValidator(verifyUserValidator), audienceValidator, warpFnc(getTweetChildrenController))
+    router.get('/:tweet_id/children', tweetIdValidator, getTweetChildrenValidator, isUserLoggedInValidator(accessTokenValidator), isUserLoggedInValidator(verifyUserValidator), audienceValidator, warpFnc(getTweetChildrenController))
 
 
 

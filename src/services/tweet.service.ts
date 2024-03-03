@@ -105,7 +105,7 @@ class TweetService {
     async increaseView(tweet_id: ObjectId, user_id: string | undefined) {
         if (!user_id) {
             const response = await databaseService.getTweetsCollection().findOneAndUpdate({ _id: tweet_id }, {
-                $inc: { guest_Views: 1 }
+                $inc: { guest_views: 1 }
             }, {
                 returnDocument: 'after',
             })
@@ -121,7 +121,7 @@ class TweetService {
         }
     }
 
-    async getTweetChildren(tweet_id: string, type: TweetType, page: number, limit: number) {
+    async getTweetChildren(tweet_id: string, type: TweetType, page: number, limit: number, user_id: string | undefined) {
         const tweets = await databaseService.getTweetsCollection().aggregate([
             {
                 '$match': {
@@ -238,11 +238,7 @@ class TweetService {
                             }
                         }
                     },
-                    'views': {
-                        '$add': [
-                            '$user_views', '$guest_Views'
-                        ]
-                    }
+
                 }
             }, {
                 '$project': {
@@ -254,9 +250,26 @@ class TweetService {
                 '$limit': limit
             }
         ]).toArray()
-        const total = await databaseService.getTweetsCollection().countDocuments({
+        const ids = tweets.map(tweet => { return tweet._id as ObjectId })
+        const inc = user_id ? { user_views: 1 } : { guest_views: 1 }
+
+        const [total] = await Promise.all([await databaseService.getTweetsCollection().countDocuments({
             parent_id: new ObjectId(tweet_id),
             type
+        }), await databaseService.getTweetsCollection().updateMany({
+            _id: {
+                $in: ids
+            }
+        }, {
+            $inc: inc
+        })])
+
+        tweets.forEach(tweet => {
+            if (user_id) {
+                tweet.user_views += 1
+            } else {
+                tweet.guest_views += 1
+            }
         })
         return { tweets, total }
     }

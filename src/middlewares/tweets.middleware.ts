@@ -229,11 +229,7 @@ export const tweetIdValidator = validate(checkSchema({
                                     }
                                 }
                             },
-                            'views': {
-                                '$add': [
-                                    '$user_views', '$guest_Views'
-                                ]
-                            }
+
                         }
                     }, {
                         '$project': {
@@ -283,3 +279,36 @@ export const audienceValidator = warpFnc(async (req: Request, res: Response, nex
     }
     next()
 })
+export const getTweetChildrenValidator = validate(checkSchema({
+    tweet_type: {
+        isIn: {
+            options: [TweetType],
+            errorMessage: tweetMessage.INVALID_TWEET_TYPE
+        }
+    },
+    limit: {
+        isNumeric: true,
+        custom: {
+            options: (value) => {
+                const num = Number(value)
+                if (num > 100 || num < 1) throw new Error('Limit is: 1<= limit <= 100')
+                return true
+
+            }
+        }
+    },
+    page: {
+        isNumeric: true,
+        custom: {
+            options: (value) => {
+                const num = Number(value)
+                if (num < 1) throw new Error('Page must >=1')
+                return true
+
+            }
+        }
+    }
+
+
+
+}))
