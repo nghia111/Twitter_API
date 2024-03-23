@@ -5,7 +5,7 @@ import { TweetType } from '~/constants/enums'
 import { tweetMessage } from '~/constants/message'
 import { BookmarkReqBody } from '~/models/requests/bookmark.request'
 import { LikeReqBody } from '~/models/requests/like.request'
-import { TweetParams, TweetQuery, TweetReqBody } from '~/models/requests/tweet.request'
+import { Pagination, TweetParams, TweetQuery, TweetReqBody } from '~/models/requests/tweet.request'
 import { TokenPayload } from '~/models/requests/user.request'
 import Tweet from '~/models/schemas/Tweet.schema'
 import { databaseService } from '~/services/database.service'
@@ -87,5 +87,21 @@ export const getTweetChildrenController = async (req: Request<TweetParams, any, 
             limit,
             total_page
         }
+    })
+}
+export const getNewFeedsController = async (req: Request<TweetParams, any, any, Pagination>, res: Response) => {
+    const user_id = req.decode_authorization?.user_id as string
+    const page = Number(req.query.page)
+    const limit = Number(req.query.limit)
+    const response = await tweetService.getNewFeeds(user_id, page, limit)
+    const result = {
+        tweets: response.tweets,
+        limit,
+        page,
+        total_page: Math.ceil(response.total / limit)
+    }
+    res.json({
+        message: "Get new feed successfully",
+        result
     })
 }

@@ -1,6 +1,6 @@
 import express from 'express'
-import { bookmarkTweetController, createTweetController, getTweetChildrenController, getTweetController, likeTweetController, unbookmarkTweetController, unlikeTweetController } from '~/controllers/tweets.controller'
-import { audienceValidator, getTweetChildrenValidator, isUserLoggedInValidator, tweetIdValidator, tweetValidator } from '~/middlewares/tweets.middleware'
+import { bookmarkTweetController, createTweetController, getNewFeedsController, getTweetChildrenController, getTweetController, likeTweetController, unbookmarkTweetController, unlikeTweetController } from '~/controllers/tweets.controller'
+import { audienceValidator, getTweetChildrenValidator, isUserLoggedInValidator, paginationValidator, tweetIdValidator, tweetValidator } from '~/middlewares/tweets.middleware'
 import { accessTokenValidator, verifyUserValidator } from '~/middlewares/users.middleware'
 import { warpFnc } from '~/utils/hanlders'
 const router = express.Router()
@@ -53,7 +53,19 @@ export const initTweetRoute = (app: express.Express) => {
    * 
    * query: {limit: number, page: number, tweet_type: number}
    */
-    router.get('/:tweet_id/children', tweetIdValidator, getTweetChildrenValidator, isUserLoggedInValidator(accessTokenValidator), isUserLoggedInValidator(verifyUserValidator), audienceValidator, warpFnc(getTweetChildrenController))
+    router.get('/:tweet_id/children', tweetIdValidator, getTweetChildrenValidator, paginationValidator, isUserLoggedInValidator(accessTokenValidator), isUserLoggedInValidator(verifyUserValidator), audienceValidator, warpFnc(getTweetChildrenController))
+
+    /**
+   * Description: Get new feeds
+   * method : POST
+   * 
+   * headers: {Authorization},
+   * query: {limit: number, page: number}
+
+   */
+    router.get('/', paginationValidator, (accessTokenValidator), (verifyUserValidator), warpFnc(getNewFeedsController))
+
+
 
 
 
