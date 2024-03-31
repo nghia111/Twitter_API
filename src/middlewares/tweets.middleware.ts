@@ -1,7 +1,7 @@
 import { checkSchema } from "express-validator";
 import { isEmpty, isString } from "lodash";
 import { ObjectId } from "mongodb";
-import { MediaType, TweetAudience, TweetType, UserVerifyStatus } from "~/constants/enums";
+import { MediaType, MediaTypeQuery, PeopleFollow, TweetAudience, TweetType, UserVerifyStatus } from "~/constants/enums";
 import { tweetMessage, userMessage } from "~/constants/message";
 import { ErrorWithStatus } from "~/models/Errors";
 import { databaseService } from "~/services/database.service";
@@ -315,4 +315,27 @@ export const paginationValidator = validate(checkSchema({
         }
     }
 
+}, ['query']))
+
+
+export const searchValidator = validate(checkSchema({
+    content: {
+        isString: { errorMessage: 'content must be string' },
+    },
+    media_type: {
+        optional: true,
+        isIn: {
+            options: [Object.values(MediaTypeQuery)],
+            errorMessage: `media_type must be one of ${Object.values(MediaTypeQuery).join(', ')}`
+
+        },
+    },
+    people_follow: {
+        optional: true,
+        isIn: {
+            options: [Object.values(PeopleFollow)],
+            errorMessage: `people_follow must be 0 or 1}`
+
+        }
+    }
 }, ['query']))

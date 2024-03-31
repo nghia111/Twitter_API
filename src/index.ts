@@ -10,6 +10,7 @@ import { defaultErrorHandler } from './middlewares/errors.middleware';
 
 import { initStaticRoute } from './routes/static.route';
 import { initTweetRoute } from './routes/tweets.route';
+import { initSearchRoute } from './routes/search.route';
 
 databaseService.connect()
 
@@ -28,6 +29,7 @@ initUserRoute(app)
 initMediasRoute(app)
 initStaticRoute(app)
 initTweetRoute(app)
+initSearchRoute(app)
 // //                                    thư mục tĩnh
 // app.use('/uploads', express.static(path.resolve('uploads')))
 app.use(defaultErrorHandler)

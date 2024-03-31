@@ -14,6 +14,10 @@ export enum MediaType {
     Image,
     Video
 }
+export enum MediaTypeQuery {
+    Image = 'image',
+    Video = 'video'
+}
 export enum TweetType {
     Tweet,
     Retweet,
@@ -23,4 +27,8 @@ export enum TweetType {
 export enum TweetAudience {
     Everyone,
     TwitterCircle
+}
+export enum PeopleFollow {
+    All = '0',
+    Following = '1'
 }
